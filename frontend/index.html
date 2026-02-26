@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Minimal LMS</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; }
+    h1, h2 { margin-bottom: 0.5rem; }
+    .card { border: 1px solid #ddd; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+    .row { margin-bottom: 0.5rem; }
+    label { display: block; margin-bottom: 0.25rem; }
+    input { padding: 0.25rem 0.5rem; width: 200px; }
+    button { padding: 0.4rem 0.8rem; margin-right: 0.3rem; cursor: pointer; }
+    #status { margin-top: 1rem; font-size: 0.9rem; color: #555; white-space: pre-line; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Minimal LMS</h1>
+
+  <div class="card">
+    <h2>1. Login</h2>
+    <div class="row">
+      <label>Username</label>
+      <input id="username" type="text" value="student1" />
+    </div>
+    <div class="row">
+      <label>Password</label>
+      <input id="password" type="password" value="password123" />
+    </div>
+    <button id="btn-login">Login</button>
+    <div id="login-info" class="row"></div>
+  </div>
+
+  <div class="card hidden" id="courses-card">
+    <h2>2. Courses</h2>
+    <button id="btn-load-courses">Load courses</button>
+    <div id="courses-list"></div>
+  </div>
+
+  <div id="status"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
