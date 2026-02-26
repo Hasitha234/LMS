@@ -2,43 +2,64 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Minimal LMS</title>
-  <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; }
-    h1, h2 { margin-bottom: 0.5rem; }
-    .card { border: 1px solid #ddd; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
-    .row { margin-bottom: 0.5rem; }
-    label { display: block; margin-bottom: 0.25rem; }
-    input { padding: 0.25rem 0.5rem; width: 200px; }
-    button { padding: 0.4rem 0.8rem; margin-right: 0.3rem; cursor: pointer; }
-    #status { margin-top: 1rem; font-size: 0.9rem; color: #555; white-space: pre-line; }
-    .hidden { display: none; }
-  </style>
+  <title>Minimal LMS (Moodle-style)</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>Minimal LMS</h1>
-
-  <div class="card">
-    <h2>1. Login</h2>
-    <div class="row">
-      <label>Username</label>
-      <input id="username" type="text" value="student1" />
-    </div>
-    <div class="row">
-      <label>Password</label>
-      <input id="password" type="password" value="password123" />
-    </div>
-    <button id="btn-login">Login</button>
-    <div id="login-info" class="row"></div>
+  <div class="navbar">
+    <div class="navbar-brand">Minimal LMS</div>
+    <div class="navbar-user" id="navbar-user">Not logged in</div>
   </div>
 
-  <div class="card hidden" id="courses-card">
-    <h2>2. Courses</h2>
-    <button id="btn-load-courses">Load courses</button>
-    <div id="courses-list"></div>
+  <!-- Login view -->
+  <div id="login-view" class="center-wrapper">
+    <div class="card">
+      <h2>Log in</h2>
+      <p class="small">Demo user: <strong>student1 / password123</strong></p>
+
+      <div class="form-row">
+        <label>Username</label>
+        <input id="username" type="text" value="student1" />
+      </div>
+      <div class="form-row">
+        <label>Password</label>
+        <input id="password" type="password" value="password123" />
+      </div>
+      <button id="btn-login" class="primary">Log in</button>
+
+      <div id="login-info" class="small" style="margin-top: 0.75rem;"></div>
+      <div id="login-error" class="small" style="color: #b00020; margin-top: 0.5rem;"></div>
+    </div>
   </div>
 
-  <div id="status"></div>
+  <!-- Dashboard view -->
+  <div id="dashboard-view" class="layout hidden">
+    <!-- Sidebar: course list -->
+    <aside class="sidebar">
+      <h3>My courses</h3>
+      <button id="btn-load-courses" class="outline" style="margin-bottom: 0.5rem;">
+        Refresh courses
+      </button>
+      <div id="courses-list"></div>
+    </aside>
+
+    <!-- Main: course content + activities -->
+    <main class="main">
+      <section id="course-content">
+        <div class="course-header">
+          <h2 id="course-title">Select a course</h2>
+          <p id="course-description">Choose a course from the left to see its activities.</p>
+        </div>
+
+        <section id="activities-section" class="hidden">
+          <h3>Activities</h3>
+          <div class="activities-grid" id="activities-grid"></div>
+        </section>
+
+        <div id="status"></div>
+      </section>
+    </main>
+  </div>
 
   <script src="app.js"></script>
 </body>

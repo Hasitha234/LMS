@@ -1,0 +1,228 @@
+:root {
+    --moodle-blue: #0073b1;
+    --moodle-dark-blue: #005f8f;
+    --moodle-bg: #f5f5f5;
+    --moodle-card-bg: #ffffff;
+    --moodle-border: #d0d0d0;
+    --moodle-text: #222;
+    --moodle-muted: #666;
+    --moodle-accent: #f98012;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--moodle-bg);
+    color: var(--moodle-text);
+  }
+  
+  /* Top navbar */
+  
+  .navbar {
+    background: var(--moodle-blue);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .navbar-brand {
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  
+  .navbar-user {
+    font-size: 0.9rem;
+  }
+  
+  /* Layout */
+  
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 0;
+    height: calc(100vh - 56px);
+  }
+  
+  .sidebar {
+    background: #ffffff;
+    border-right: 1px solid var(--moodle-border);
+    padding: 1rem;
+    overflow-y: auto;
+  }
+  
+  .main {
+    padding: 1rem 1.5rem;
+    overflow-y: auto;
+  }
+  
+  /* Login card */
+  
+  .center-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(100vh - 56px);
+  }
+  
+  .card {
+    background: var(--moodle-card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--moodle-border);
+    padding: 1.5rem;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+  
+  .card h2 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+  }
+  
+  .form-row {
+    margin-bottom: 0.75rem;
+  }
+  
+  label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  input[type="text"],
+  input[type="password"] {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid var(--moodle-border);
+    font-size: 0.9rem;
+  }
+  
+  /* Buttons */
+  
+  button {
+    padding: 0.45rem 0.9rem;
+    border-radius: 4px;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  
+  button.primary {
+    background: var(--moodle-blue);
+    color: white;
+  }
+  
+  button.primary:hover {
+    background: var(--moodle-dark-blue);
+  }
+  
+  button.outline {
+    background: transparent;
+    border: 1px solid var(--moodle-border);
+    color: var(--moodle-text);
+  }
+  
+  button.outline:hover {
+    background: #f0f0f0;
+  }
+  
+  /* Sidebar */
+  
+  .sidebar h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+  }
+  
+  .course-item {
+    padding: 0.5rem 0.4rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.93rem;
+  }
+  
+  .course-item:hover {
+    background: #f3f8fb;
+  }
+  
+  .course-item.active {
+    background: #e2f0fb;
+    border-left: 3px solid var(--moodle-blue);
+    padding-left: 0.35rem;
+  }
+  
+  /* Main content */
+  
+  .course-header h2 {
+    margin-top: 0;
+    margin-bottom: 0.25rem;
+  }
+  
+  .course-header p {
+    margin-top: 0;
+    font-size: 0.9rem;
+    color: var(--moodle-muted);
+  }
+  
+  .activities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .activity-card {
+    background: var(--moodle-card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--moodle-border);
+    padding: 1rem;
+  }
+  
+  .activity-card h4 {
+    margin-top: 0;
+    margin-bottom: 0.4rem;
+  }
+  
+  .activity-type {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--moodle-accent);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.25rem;
+  }
+  
+  .activity-actions {
+    margin-top: 0.75rem;
+  }
+  
+  .activity-actions button {
+    margin-right: 0.4rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Status / log */
+  
+  #status {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--moodle-muted);
+    white-space: pre-line;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  .small {
+    font-size: 0.85rem;
+    color: var(--moodle-muted);
+  }
