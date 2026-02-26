@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from datetime import datetime
 from app.api import routes_auth, routes_courses
+from app.api import routes_auth, routes_courses, routes_events
 
 from app.core.config import settings
 
@@ -37,6 +38,7 @@ app.add_middleware(
 
 app.include_router(routes_auth.router, prefix="/api")
 app.include_router(routes_courses.router, prefix="/api")
+app.include_router(routes_events.router, prefix="/api")
 
 
 @app.get("/")
