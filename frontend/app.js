@@ -1,4 +1,5 @@
 const API_BASE = "http://localhost:8010/api";
+const EDUMIND_WEB_URL = "http://localhost:5174";
 
 let currentUser = null; // { id, username, displayName, edumindStudentId }
 let courses = [];
@@ -15,6 +16,7 @@ const courseTitleEl = document.getElementById("course-title");
 const courseDescriptionEl = document.getElementById("course-description");
 const activitiesSectionEl = document.getElementById("activities-section");
 const activitiesGridEl = document.getElementById("activities-grid");
+const edumindLinkEl = document.getElementById("edumind-link");
 
 function setStatus(msg) {
   const time = new Date().toLocaleTimeString();
@@ -59,6 +61,7 @@ document.getElementById("btn-login").addEventListener("click", async () => {
       username: data.user.username,
       displayName: data.user.display_name,
       edumindStudentId: data.edumind_student_id,
+      instituteId: data.institute_id || "LMS_INST_A",
     };
 
     navbarUserEl.textContent =
@@ -75,6 +78,13 @@ document.getElementById("btn-login").addEventListener("click", async () => {
     // Switch view: hide login, show dashboard
     loginView.classList.add("hidden");
     dashboardView.classList.remove("hidden");
+
+    // Show the EduMind link if the student has a mapping
+    if (currentUser.edumindStudentId && edumindLinkEl) {
+      edumindLinkEl.href =
+        `${EDUMIND_WEB_URL}/user-signin?student_id=${encodeURIComponent(currentUser.edumindStudentId)}&institute_id=${encodeURIComponent(currentUser.instituteId)}`;
+      edumindLinkEl.classList.remove("hidden");
+    }
 
     setStatus("Login successful. Click a course on the left.");
     await loadCourses();

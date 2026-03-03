@@ -19,6 +19,8 @@ def send_event_to_engagement_tracker(
 ) -> Dict[str, Any]:
     """
     Sends a single event to service-engagement-tracker's /api/v1/events/ingest endpoint.
+    The institute is identified via the X-Institute-ID header so that EduMind
+    can separate data from different connected LMS providers.
     """
     if event_data is None:
         event_data = {}
@@ -34,7 +36,11 @@ def send_event_to_engagement_tracker(
         "source_service": source_service,
     }
 
+    headers = {
+        "X-Institute-ID": settings.INSTITUTE_ID,
+    }
+
     with httpx.Client(timeout=5.0) as client:
-        resp = client.post(url, json=payload)
+        resp = client.post(url, json=payload, headers=headers)
         resp.raise_for_status()
         return resp.json()

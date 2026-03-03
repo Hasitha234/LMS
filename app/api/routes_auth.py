@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.models import User, UserEdumindMapping
 from app.schemas import LoginRequest, LoginResponse, UserResponse
@@ -46,6 +47,7 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
     return LoginResponse(
         user=UserResponse.model_validate(user),
         edumind_student_id=edumind_student_id,
+        institute_id=settings.INSTITUTE_ID,
     )
 
 

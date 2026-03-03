@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     # EduMind Engagement Tracker – where we send events
     ENGAGEMENT_TRACKER_URL: str = "http://localhost:8005"
 
+    # Institute identifier — uniquely identifies this LMS to EduMind.
+    # Change this value when connecting a different institution.
+    # Example: "LMS_INST_A", "LMS_INST_B", "UNIV_COLOMBO", etc.
+    INSTITUTE_ID: str = "LMS_INST_A"
+
     # Database – SQLite by default (use .env for PostgreSQL later)
     DATABASE_URL: str = "sqlite:///./lms.db"
 

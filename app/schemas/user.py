@@ -19,3 +19,4 @@ class UserResponse(BaseModel):
 class LoginResponse(BaseModel):
     user: UserResponse
     edumind_student_id: Optional[str] = None
+    institute_id: str = "LMS_INST_A"

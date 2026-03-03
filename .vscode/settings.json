@@ -1,4 +1,4 @@
 {
-  "python.defaultInterpreterPath": "${workspaceFolder}/venv/Scripts/python.exe",
+  "python.defaultInterpreterPath": "C:/Projects/edumind/LMS/venv/Scripts/python.exe",
   "python.analysis.extraPaths": []
 }

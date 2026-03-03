@@ -226,3 +226,21 @@
     font-size: 0.85rem;
     color: var(--moodle-muted);
   }
+
+  .edumind-link {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    background: linear-gradient(135deg, #059669, #0d9488);
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: opacity 0.2s;
+  }
+  .edumind-link:hover {
+    opacity: 0.9;
+  }
