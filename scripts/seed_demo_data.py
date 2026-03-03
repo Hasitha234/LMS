@@ -161,6 +161,35 @@ def trigger_aggregation():
         print("  (You can run it manually later: POST http://localhost:8005/api/v1/aggregation/process-all?days=14)")
 
 
+def register_learning_style_profiles():
+    """Create StudentLearningProfile records in the learning-style service for each student."""
+    ls_api = "http://localhost:8006"
+    styles = ["Visual", "Auditory", "Reading", "Kinesthetic"]
+    print("\nRegistering student profiles in learning-style service...")
+    for i, s in enumerate(STUDENTS):
+        sid = s["edumind"]
+        style = styles[i % len(styles)]
+        payload = {
+            "student_id": sid,
+            "learning_style": style,
+            "style_confidence": 0.5,
+            "style_probabilities": {st: 0.25 for st in styles},
+            "preferred_difficulty": "Medium",
+            "preferred_resource_types": [],
+        }
+        try:
+            with httpx.Client(timeout=10.0) as client:
+                resp = client.post(f"{ls_api}/api/v1/students/", json=payload)
+                if resp.status_code == 201:
+                    print(f"  {sid}: profile created (initial style: {style})")
+                elif resp.status_code == 400 and "already exists" in resp.text:
+                    print(f"  {sid}: profile already exists")
+                else:
+                    print(f"  {sid}: unexpected response {resp.status_code}")
+        except Exception as e:
+            print(f"  {sid}: failed ({e})")
+
+
 def trigger_learning_style_sync():
     """Sync engagement data into the learning-style service for each student."""
     ls_api = "http://localhost:8006"
@@ -169,7 +198,7 @@ def trigger_learning_style_sync():
         sid = s["edumind"]
         url = f"{ls_api}/api/v1/sync/from-engagement/{sid}?days=14"
         try:
-            with httpx.Client(timeout=15.0) as client:
+            with httpx.Client(timeout=30.0) as client:
                 resp = client.post(url)
                 resp.raise_for_status()
                 data = resp.json()
@@ -198,8 +227,11 @@ if __name__ == "__main__":
     print("\n3. Triggering aggregation backfill...")
     trigger_aggregation()
 
-    print("\n4. Syncing to learning-style service...")
+    print("\n4. Registering students in learning-style service...")
     print("   (Requires learning-style service running on :8006)")
+    register_learning_style_profiles()
+
+    print("\n5. Syncing to learning-style service...")
     trigger_learning_style_sync()
 
     print("\n" + "=" * 60)

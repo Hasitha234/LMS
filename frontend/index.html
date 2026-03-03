@@ -43,9 +43,7 @@
       <div id="courses-list"></div>
 
       <hr style="margin: 1rem 0; border-color: #ddd;" />
-      <a id="edumind-link" href="#" target="_blank" class="edumind-link hidden">
-        View my EduMind Analytics
-      </a>
+      <button id="btn-my-performance" class="perf-btn hidden">My Performance</button>
     </aside>
 
     <!-- Main: course content + activities -->
@@ -62,6 +60,16 @@
         </section>
 
         <div id="status"></div>
+      </section>
+
+      <section id="performance-view" class="hidden">
+        <div class="perf-header">
+          <h2>My Performance</h2>
+          <p class="small">Powered by EduMind Analytics</p>
+        </div>
+        <div id="perf-loading" class="perf-loading hidden">Loading your performance data...</div>
+        <div id="perf-error" class="perf-error hidden"></div>
+        <div class="performance-grid" id="performance-grid"></div>
       </section>
     </main>
   </div>

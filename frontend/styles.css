@@ -244,3 +244,206 @@
   .edumind-link:hover {
     opacity: 0.9;
   }
+
+  /* My Performance button */
+
+  .perf-btn {
+    display: block;
+    width: 100%;
+    padding: 0.6rem 1rem;
+    margin-bottom: 0.6rem;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .perf-btn:hover { opacity: 0.9; }
+
+  /* Performance view */
+
+  .perf-header { margin-bottom: 1rem; }
+  .perf-header h2 { margin: 0 0 0.15rem 0; }
+
+  .perf-loading {
+    padding: 2rem;
+    text-align: center;
+    color: var(--moodle-muted);
+  }
+  .perf-error {
+    padding: 0.75rem 1rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    color: #b91c1c;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .performance-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 800px) {
+    .performance-grid { grid-template-columns: 1fr; }
+  }
+
+  .perf-card {
+    background: var(--moodle-card-bg);
+    border: 1px solid var(--moodle-border);
+    border-radius: 10px;
+    padding: 1.1rem 1.2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .perf-card-wide { grid-column: 1 / -1; }
+
+  .perf-card-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: var(--moodle-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  /* Score badge */
+
+  .perf-score-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .perf-score-badge {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .score-high { background: #059669; }
+  .score-med  { background: #d97706; }
+  .score-low  { background: #dc2626; }
+
+  .perf-level { font-size: 1.05rem; font-weight: 600; }
+  .perf-trend { font-size: 0.9rem; margin-top: 0.15rem; }
+  .trend-up    { color: #059669; }
+  .trend-down  { color: #dc2626; }
+  .trend-stable { color: #6b7280; }
+
+  /* Stat rows */
+
+  .perf-stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .perf-stat-label { color: var(--moodle-muted); }
+  .perf-stat-value { font-weight: 600; }
+
+  /* Risk */
+
+  .perf-risk-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .perf-risk-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #fff;
+  }
+  .risk-high { background: #dc2626; }
+  .risk-med  { background: #d97706; }
+  .risk-low  { background: #059669; }
+  .perf-risk-prob { font-size: 0.85rem; color: var(--moodle-muted); }
+
+  /* Alerts */
+
+  .perf-alerts { margin-bottom: 0.75rem; }
+  .perf-alert {
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    margin-bottom: 0.3rem;
+  }
+  .perf-alert-high    { background: #fef2f2; color: #b91c1c; }
+  .perf-alert-medium  { background: #fffbeb; color: #92400e; }
+  .perf-alert-low, .perf-alert-info { background: #f0fdf4; color: #166534; }
+
+  /* Component score bars */
+
+  .perf-components { margin-top: 0.5rem; }
+  .perf-comp-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+    font-size: 0.85rem;
+  }
+  .perf-comp-label { width: 80px; color: var(--moodle-muted); flex-shrink: 0; }
+  .perf-comp-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .perf-comp-bar {
+    height: 100%;
+    background: var(--moodle-blue);
+    border-radius: 4px;
+    transition: width 0.4s;
+  }
+  .perf-comp-val { width: 28px; text-align: right; font-weight: 600; }
+
+  /* Weekly table */
+
+  .perf-table-wrap { overflow-x: auto; }
+  .perf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .perf-table th {
+    text-align: left;
+    padding: 0.4rem 0.6rem;
+    border-bottom: 2px solid var(--moodle-border);
+    color: var(--moodle-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  .perf-table td {
+    padding: 0.35rem 0.6rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .perf-table-total td {
+    border-top: 2px solid var(--moodle-border);
+    border-bottom: none;
+    background: #fafafa;
+  }
+
+  /* Learning style */
+
+  .perf-style-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .perf-style-icon { font-size: 2rem; }
+  .perf-style-name { font-size: 1.15rem; font-weight: 700; }

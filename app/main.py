@@ -5,9 +5,9 @@ Phase 1: Skeleton with health check.
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from datetime import datetime
-from app.api import routes_auth, routes_courses
 from app.api import routes_auth, routes_courses, routes_events
 
 from app.core.config import settings
@@ -85,3 +85,7 @@ def docs_simple():
     </body>
     </html>
     """
+
+from pathlib import Path as _Path
+_frontend_dir = _Path(__file__).resolve().parent.parent / "frontend"
+app.mount("/frontend", StaticFiles(directory=str(_frontend_dir), html=True), name="frontend")
