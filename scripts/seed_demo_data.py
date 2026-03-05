@@ -33,6 +33,7 @@ STUDENTS = [
 ]
 
 COURSES = [
+    {"title": "VARK Demo: Machine Learning", "description": "VARK demo course – video, article, diagram, quiz. EduMind infers your learning style from your activity."},
     {"title": "Introduction to Programming", "description": "Learn Python basics, variables, loops, and functions."},
     {"title": "Data Structures & Algorithms", "description": "Arrays, linked lists, trees, sorting, and searching."},
     {"title": "Database Management Systems",  "description": "SQL, normalization, indexing, and transactions."},

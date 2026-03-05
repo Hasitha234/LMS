@@ -1,9 +1,8 @@
 const API_BASE = "http://localhost:8010/api";
-const EDUMIND_WEB_URL = "http://localhost:5174";
 const EDUMIND_ENGAGEMENT_API = "http://localhost:8005";
 const EDUMIND_LEARNING_API = "http://localhost:8006";
 
-let currentUser = null; // { id, username, displayName, edumindStudentId }
+let currentUser = null;
 let courses = [];
 let activeCourse = null;
 
@@ -18,7 +17,6 @@ const courseTitleEl = document.getElementById("course-title");
 const courseDescriptionEl = document.getElementById("course-description");
 const activitiesSectionEl = document.getElementById("activities-section");
 const activitiesGridEl = document.getElementById("activities-grid");
-const edumindLinkEl = document.getElementById("edumind-link");
 const btnMyPerformance = document.getElementById("btn-my-performance");
 const courseContentEl = document.getElementById("course-content");
 const performanceViewEl = document.getElementById("performance-view");
@@ -27,8 +25,9 @@ const perfLoadingEl = document.getElementById("perf-loading");
 const perfErrorEl = document.getElementById("perf-error");
 
 function setStatus(msg) {
-  const time = new Date().toLocaleTimeString();
-  statusEl.textContent = `[${time}] ${msg}`;
+  // In the production-like LMS UI we avoid showing internal logs.
+  // Keep this hook for future use (e.g., subtle notifications), but do not render debug text.
+  statusEl.textContent = "";
 }
 
 async function api(path, options = {}) {
@@ -49,7 +48,7 @@ async function api(path, options = {}) {
   return res.json();
 }
 
-// 1) Login
+// ─── Login ─────────────────────────────────────────────────────────────
 
 document.getElementById("btn-login").addEventListener("click", async () => {
   const username = document.getElementById("username").value.trim();
@@ -74,168 +73,269 @@ document.getElementById("btn-login").addEventListener("click", async () => {
 
     navbarUserEl.textContent =
       (currentUser.displayName || currentUser.username) +
-      (currentUser.edumindStudentId
-        ? ` (EduMind: ${currentUser.edumindStudentId})`
-        : " (no EduMind mapping)");
+      (currentUser.edumindStudentId ? ` (${currentUser.edumindStudentId})` : "");
 
     loginInfoEl.textContent =
-      `Logged in as ${currentUser.displayName || currentUser.username}\n` +
-      `LMS user id: ${currentUser.id}\n` +
-      `EduMind student_id: ${currentUser.edumindStudentId || "NONE"}`;
+      `Logged in as ${currentUser.displayName || currentUser.username} | EduMind: ${currentUser.edumindStudentId || "NONE"}`;
 
-    // Switch view: hide login, show dashboard
     loginView.classList.add("hidden");
     dashboardView.classList.remove("hidden");
 
-    // Show only the My Performance button if the student has a mapping
     if (currentUser.edumindStudentId) {
       btnMyPerformance.classList.remove("hidden");
     }
 
-    setStatus("Login successful. Click a course on the left.");
+    setStatus("Login successful. Select a course.");
     await loadCourses();
   } catch (err) {
     loginErrorEl.textContent = "Login failed: " + err.message;
   }
 });
 
-// 2) Load courses
+// ─── Courses ────────────────────────────────────────────────────────────
 
 document.getElementById("btn-load-courses").addEventListener("click", async () => {
   await loadCourses();
 });
 
 async function loadCourses() {
-  if (!currentUser) {
-    setStatus("Please login first.");
-    return;
-  }
+  if (!currentUser) return;
 
   try {
-    setStatus("Loading courses...");
     const data = await api("/courses/");
-
     courses = data.courses || [];
     renderCourseList();
 
     if (courses.length === 0) {
       courseTitleEl.textContent = "No courses yet";
-      courseDescriptionEl.textContent =
-        "Use POST /api/courses in Postman to create a demo course.";
+      courseDescriptionEl.textContent = "No courses are currently assigned to your account.";
       activitiesSectionEl.classList.add("hidden");
     } else if (!activeCourse) {
-      // Auto-select the first course
       selectCourse(courses[0].id);
     }
-
-    setStatus("Courses loaded.");
   } catch (err) {
-    setStatus("Failed to load courses: " + err.message);
+    console.error("Failed to load courses", err);
   }
 }
 
 function renderCourseList() {
   coursesListEl.innerHTML = "";
-  if (courses.length === 0) {
-    const div = document.createElement("div");
-    div.className = "small";
-    div.textContent = "No courses found.";
-    coursesListEl.appendChild(div);
-    return;
-  }
-
   courses.forEach((course) => {
     const div = document.createElement("div");
-    div.className = "course-item" + (activeCourse && activeCourse.id === course.id ? " active" : "");
+    div.className = "course-item" + (activeCourse?.id === course.id ? " active" : "");
     div.textContent = course.title;
     div.addEventListener("click", () => selectCourse(course.id));
     coursesListEl.appendChild(div);
   });
 }
 
+// ─── Course activities with real materials ───────────────────────────────
+
+const VARK_ACTIVITIES = [
+  {
+    id: "intro-video",
+    type: "Video",
+    vark: "auditory",
+    title: "Introduction to Machine Learning",
+    description: "Watch this lecture to learn core machine learning concepts.",
+    content: `
+      <div class="content-panel">
+        <h4>Video: Introduction to Machine Learning</h4>
+        <div class="video-container">
+          <iframe src="https://www.youtube.com/embed/ukzFI9rgwfU?rel=0" allowfullscreen></iframe>
+        </div>
+        <p class="small" style="margin-top:0.75rem;">3Blue1Brown – Neural Networks (YouTube)</p>
+        <button class="primary" data-role="video-complete" style="margin-top:0.75rem;">Mark video as completed</button>
+      </div>
+    `,
+    actions: [
+      { label: "Play video", eventType: "video_play" },
+      { label: "Complete video", eventType: "video_complete" },
+    ],
+  },
+  {
+    id: "ml-article",
+    type: "Article",
+    vark: "reading",
+    title: "What is Machine Learning?",
+    description: "Read this article on machine learning fundamentals.",
+    content: `
+      <div class="content-panel">
+        <h4>What is Machine Learning?</h4>
+        <div class="article-content">
+          <p><strong>Machine learning (ML)</strong> is a subset of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed. It focuses on developing computer programs that can access data and use it to learn for themselves.</p>
+          <p>The process begins with observations or data, such as examples, direct experience, or instruction, to look for patterns in data and make better decisions in the future. The primary aim is to allow computers to learn automatically without human intervention.</p>
+          <p><strong>Types of ML:</strong> Supervised learning (labeled data), unsupervised learning (unlabeled data), and reinforcement learning (reward-based). Common applications include recommendation systems, image recognition, natural language processing, and autonomous vehicles.</p>
+        </div>
+      </div>
+    `,
+    actions: [
+      { label: "Read page", eventType: "page_view" },
+    ],
+  },
+  {
+    id: "ml-diagram",
+    type: "Diagram",
+    vark: "visual",
+    title: "Neural Network Architecture",
+    description: "Review this diagram showing a simple neural network.",
+    content: `
+      <div class="content-panel">
+        <h4>Neural Network Architecture</h4>
+        <div class="diagram-container">
+          <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;">
+            <defs><linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#8b5cf6"/><stop offset="100%" style="stop-color:#6366f1"/></linearGradient></defs>
+            <circle cx="50" cy="50" r="12" fill="url(#g1)" opacity="0.8"/><circle cx="50" cy="100" r="12" fill="url(#g1)" opacity="0.8"/><circle cx="50" cy="150" r="12" fill="url(#g1)" opacity="0.8"/>
+            <circle cx="200" cy="60" r="12" fill="#06b6d4" opacity="0.8"/><circle cx="200" cy="100" r="12" fill="#06b6d4" opacity="0.8"/><circle cx="200" cy="140" r="12" fill="#06b6d4" opacity="0.8"/>
+            <circle cx="350" cy="100" r="12" fill="#10b981" opacity="0.8"/>
+            <line x1="62" y1="50" x2="188" y2="60" stroke="#71717a" stroke-width="1" opacity="0.6"/>
+            <line x1="62" y1="100" x2="188" y2="100" stroke="#71717a" stroke-width="1" opacity="0.6"/>
+            <line x1="62" y1="150" x2="188" y2="140" stroke="#71717a" stroke-width="1" opacity="0.6"/>
+            <line x1="212" y1="60" x2="338" y2="100" stroke="#71717a" stroke-width="1" opacity="0.6"/>
+            <line x1="212" y1="100" x2="338" y2="100" stroke="#71717a" stroke-width="1" opacity="0.6"/>
+            <line x1="212" y1="140" x2="338" y2="100" stroke="#71717a" stroke-width="1" opacity="0.6"/>
+            <text x="50" y="185" text-anchor="middle" fill="#a1a1aa" font-size="11">Input</text>
+            <text x="200" y="185" text-anchor="middle" fill="#a1a1aa" font-size="11">Hidden</text>
+            <text x="350" y="185" text-anchor="middle" fill="#a1a1aa" font-size="11">Output</text>
+          </svg>
+        </div>
+        <p class="small" style="margin-top:0.75rem;">Input layer → Hidden layers → Output layer</p>
+      </div>
+    `,
+    actions: [
+      { label: "View diagram", eventType: "resource_download" },
+    ],
+  },
+  {
+    id: "ml-quiz",
+    type: "Quiz",
+    vark: "kinesthetic",
+    title: "ML Basics Quiz",
+    description: "Test your knowledge with this short interactive quiz.",
+    content: `
+      <div class="content-panel">
+        <h4>ML Basics Quiz</h4>
+        <p>Which of the following is a type of machine learning?</p>
+        <div class="quiz-options" id="quiz-options">
+          <div class="quiz-option" data-value="a">Supervised learning</div>
+          <div class="quiz-option" data-value="b">Unsupervised learning</div>
+          <div class="quiz-option" data-value="c">Reinforcement learning</div>
+          <div class="quiz-option" data-value="d">All of the above</div>
+        </div>
+        <button class="primary quiz-submit-btn" style="margin-top:0.75rem;">Submit answer</button>
+        <div class="small quiz-feedback" style="margin-top:0.75rem;"></div>
+      </div>
+    `,
+    actions: [],
+  },
+];
+
 function selectCourse(courseId) {
   const course = courses.find((c) => c.id === courseId);
   if (!course) return;
 
-  // Switch from performance view back to course view
   performanceViewEl.classList.add("hidden");
   courseContentEl.classList.remove("hidden");
 
   activeCourse = course;
-  renderCourseList(); // update active highlight
+  renderCourseList();
 
   courseTitleEl.textContent = course.title;
   courseDescriptionEl.textContent =
-    course.description || "This is a demo course for engagement tracking.";
+    course.description || "This course combines lecture, reading, visual summary, and quiz activities.";
 
-  // Render standard activities (Moodle-style cards)
   activitiesGridEl.innerHTML = "";
 
-  const activities = [
-    {
-      id: "overview-page",
-      type: "Page",
-      title: "Course overview",
-      description: "Read the course overview page.",
-      actions: [
-        { label: "Open page", eventType: "page_view" },
-      ],
-    },
-    {
-      id: "intro-video",
-      type: "Video",
-      title: "Introductory lecture",
-      description: "Watch the introductory video for this course.",
-      actions: [
-        { label: "Play video", eventType: "video_play" },
-        { label: "Complete video", eventType: "video_complete" },
-      ],
-    },
-    {
-      id: "quiz-1",
-      type: "Quiz",
-      title: "Quiz 1",
-      description: "Take a short quiz to test your knowledge.",
-      actions: [
-        { label: "Start quiz", eventType: "quiz_start" },
-        { label: "Submit quiz", eventType: "quiz_submit" },
-      ],
-    },
-  ];
-
-  activities.forEach((act) => {
+  VARK_ACTIVITIES.forEach((act) => {
     const card = document.createElement("div");
-    card.className = "activity-card";
+    card.className = `activity-card vark-${act.vark}`;
     card.innerHTML = `
       <div class="activity-type">${act.type}</div>
       <h4>${act.title}</h4>
       <p class="small">${act.description}</p>
       <div class="activity-actions"></div>
+      <div class="activity-content-area" style="margin-top:1rem;"></div>
     `;
 
     const actionsDiv = card.querySelector(".activity-actions");
-    act.actions.forEach((a) => {
-      const btn = document.createElement("button");
-      btn.className = "outline";
-      btn.textContent = a.label;
-      btn.addEventListener("click", () =>
-        sendEventForCourse(a.eventType, course, act)
-      );
-      actionsDiv.appendChild(btn);
+    const contentArea = card.querySelector(".activity-content-area");
+
+    // Open button to show content
+    const openBtn = document.createElement("button");
+    openBtn.className = "outline";
+    openBtn.textContent = "Open";
+    openBtn.addEventListener("click", () => {
+      if (contentArea.innerHTML) {
+        contentArea.innerHTML = "";
+        openBtn.textContent = "Open";
+      } else {
+        contentArea.innerHTML = act.content;
+        openBtn.textContent = "Close";
+
+        // Natural interactions trigger events
+        if (act.id === "intro-video") {
+          // Opening the video counts as a play
+          sendEventForCourse("video_play", course, act);
+          const completeBtn = contentArea.querySelector("[data-role='video-complete']");
+          if (completeBtn) {
+            completeBtn.addEventListener("click", () => {
+              sendEventForCourse("video_complete", course, act);
+            });
+          }
+        } else if (act.id === "ml-article") {
+          // Opening the article counts as a page view
+          sendEventForCourse("page_view", course, act);
+        } else if (act.id === "ml-diagram") {
+          // Opening the diagram counts as viewing / downloading the resource
+          sendEventForCourse("resource_download", course, act);
+        } else if (act.id === "ml-quiz") {
+          // First time opening the quiz counts as quiz_start
+          if (!contentArea.dataset.quizStarted) {
+            sendEventForCourse("quiz_start", course, act);
+            contentArea.dataset.quizStarted = "true";
+          }
+          // Quiz option selection
+          contentArea.querySelectorAll(".quiz-option").forEach((opt) => {
+            opt.addEventListener("click", () => {
+              contentArea.querySelectorAll(".quiz-option").forEach((o) => o.classList.remove("selected"));
+              opt.classList.add("selected");
+            });
+          });
+          // Quiz submission with feedback
+          const submitBtn = contentArea.querySelector(".quiz-submit-btn");
+          const feedbackEl = contentArea.querySelector(".quiz-feedback");
+          if (submitBtn && feedbackEl) {
+            submitBtn.addEventListener("click", () => {
+              const selected = contentArea.querySelector(".quiz-option.selected");
+              if (!selected) {
+                feedbackEl.textContent = "Please choose an answer before submitting.";
+                return;
+              }
+              const value = selected.dataset.value;
+              const correct = value === "d";
+              if (correct) {
+                feedbackEl.textContent = "Correct! All of these are types of machine learning.";
+              } else {
+                feedbackEl.textContent = "Not quite. The correct answer is: All of the above.";
+              }
+              sendEventForCourse("quiz_submit", course, act);
+            });
+          }
+        }
+      }
     });
+    actionsDiv.appendChild(openBtn);
 
     activitiesGridEl.appendChild(card);
   });
 
   activitiesSectionEl.classList.remove("hidden");
-  setStatus(`Selected course ${course.title}. Use activity buttons to send events.`);
 }
 
-// 3) Send event
+// ─── Send event ─────────────────────────────────────────────────────────
 
 async function sendEventForCourse(eventType, course, activity) {
   if (!currentUser) {
-    setStatus("Please login first.");
     return;
   }
 
@@ -254,25 +354,20 @@ async function sendEventForCourse(eventType, course, activity) {
   };
 
   try {
-    setStatus(`Sending ${eventType} for ${activity.title}...`);
     const res = await api("/events/", {
       method: "POST",
       body: JSON.stringify(payload),
     });
-    setStatus(
-      `Event sent: student_id=${res.student_id}, forwarded=${res.forwarded_to}`
-    );
   } catch (err) {
-    setStatus("Failed to send event: " + err.message);
+    console.error("Failed to send event", err);
   }
 }
 
-// ─── 4) My Performance ───────────────────────────────────────────────
+// ─── My Performance ──────────────────────────────────────────────────────
 
 btnMyPerformance.addEventListener("click", () => {
   courseContentEl.classList.add("hidden");
   performanceViewEl.classList.remove("hidden");
-  // Deselect active course in sidebar
   activeCourse = null;
   renderCourseList();
   loadPerformance();
@@ -282,14 +377,17 @@ async function edumindFetch(url) {
   const res = await fetch(url);
   if (!res.ok) {
     let detail = "";
-    try { const d = await res.json(); detail = d.detail || ""; } catch {}
+    try {
+      const d = await res.json();
+      detail = d.detail || "";
+    } catch {}
     throw new Error(detail || res.statusText);
   }
   return res.json();
 }
 
 async function loadPerformance() {
-  if (!currentUser || !currentUser.edumindStudentId) return;
+  if (!currentUser?.edumindStudentId) return;
 
   const sid = encodeURIComponent(currentUser.edumindStudentId);
   const iid = encodeURIComponent(currentUser.instituteId);
@@ -313,7 +411,6 @@ async function loadPerformance() {
       renderRiskCard(dashboard) +
       renderWeeklyCard(metrics) +
       renderLearningStyleCard(lsAnalytics);
-
   } catch (err) {
     perfLoadingEl.classList.add("hidden");
     perfErrorEl.textContent = "Failed to load performance data: " + err.message;
@@ -339,11 +436,8 @@ function renderEngagementCard(settled) {
   const trend = data.trend || "Stable";
   const days = data.days_tracked || 0;
 
-  const trendIcon = trend.toLowerCase().includes("improv") ? "&#9650;" :
-                    trend.toLowerCase().includes("declin") ? "&#9660;" : "&#9679;";
-  const trendClass = trend.toLowerCase().includes("improv") ? "trend-up" :
-                     trend.toLowerCase().includes("declin") ? "trend-down" : "trend-stable";
-
+  const trendIcon = trend.toLowerCase().includes("improv") ? "↑" : trend.toLowerCase().includes("declin") ? "↓" : "•";
+  const trendClass = trend.toLowerCase().includes("improv") ? "trend-up" : trend.toLowerCase().includes("declin") ? "trend-down" : "trend-stable";
   const scoreClass = score >= 70 ? "score-high" : score >= 40 ? "score-med" : "score-low";
 
   return `<div class="perf-card">
@@ -378,13 +472,13 @@ function renderRiskCard(settled) {
   const alerts = data.alerts || [];
 
   const riskClass = riskLevel === "High" ? "risk-high" : riskLevel === "Medium" ? "risk-med" : "risk-low";
-  const riskIcon = atRisk ? "&#9888;" : "&#10003;";
+  const riskIcon = atRisk ? "⚠" : "✓";
 
   let alertsHtml = "";
   if (alerts.length > 0) {
     alertsHtml = `<div class="perf-alerts">
-      ${alerts.slice(0, 3).map(a =>
-        `<div class="perf-alert perf-alert-${a.severity || 'info'}">${a.message}</div>`
+      ${alerts.slice(0, 3).map((a) =>
+        `<div class="perf-alert perf-alert-${a.severity || "info"}">${a.message}</div>`
       ).join("")}
     </div>`;
   }
@@ -420,19 +514,20 @@ function renderWeeklyCard(settled) {
   if (!data || !Array.isArray(data) || data.length === 0) {
     return `<div class="perf-card">
       <div class="perf-card-title">Weekly Activity</div>
-      <p class="small">No activity data available for the past 7 days.</p>
+      <p class="small">No activity data for the past 7 days.</p>
     </div>`;
   }
 
-  const rows = data.map(d => {
+  const rows = data.map((d) => {
     const dateStr = new Date(d.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
     return `<tr>
       <td>${dateStr}</td>
       <td>${d.login_count || 0}</td>
       <td>${d.page_views || 0}</td>
+      <td>${d.video_plays || 0}</td>
+      <td>${d.resource_downloads || 0}</td>
       <td>${d.quiz_attempts || 0}</td>
       <td>${(d.forum_posts || 0) + (d.forum_replies || 0)}</td>
-      <td>${d.assignments_submitted || 0}</td>
       <td>${Math.round(d.total_session_duration_minutes || 0)} min</td>
     </tr>`;
   }).join("");
@@ -440,20 +535,21 @@ function renderWeeklyCard(settled) {
   const totals = data.reduce((acc, d) => {
     acc.logins += d.login_count || 0;
     acc.pages += d.page_views || 0;
+    acc.videos += d.video_plays || 0;
+    acc.diagrams += d.resource_downloads || 0;
     acc.quizzes += d.quiz_attempts || 0;
     acc.forum += (d.forum_posts || 0) + (d.forum_replies || 0);
-    acc.assignments += d.assignments_submitted || 0;
     acc.time += d.total_session_duration_minutes || 0;
     return acc;
-  }, { logins: 0, pages: 0, quizzes: 0, forum: 0, assignments: 0, time: 0 });
+  }, { logins: 0, pages: 0, videos: 0, diagrams: 0, quizzes: 0, forum: 0, time: 0 });
 
   return `<div class="perf-card perf-card-wide">
-    <div class="perf-card-title">Weekly Activity (Last 7 Days)</div>
+    <div class="perf-card-title">Weekly Activity</div>
     <div class="perf-table-wrap">
       <table class="perf-table">
         <thead>
           <tr>
-            <th>Date</th><th>Logins</th><th>Pages</th><th>Quizzes</th><th>Forum</th><th>Assign.</th><th>Time</th>
+            <th>Date</th><th>Logins</th><th>Pages</th><th>Videos</th><th>Diagrams</th><th>Quizzes</th><th>Forum</th><th>Time</th>
           </tr>
         </thead>
         <tbody>
@@ -462,9 +558,10 @@ function renderWeeklyCard(settled) {
             <td><strong>Total</strong></td>
             <td><strong>${totals.logins}</strong></td>
             <td><strong>${totals.pages}</strong></td>
+            <td><strong>${totals.videos}</strong></td>
+            <td><strong>${totals.diagrams}</strong></td>
             <td><strong>${totals.quizzes}</strong></td>
             <td><strong>${totals.forum}</strong></td>
-            <td><strong>${totals.assignments}</strong></td>
             <td><strong>${Math.round(totals.time)} min</strong></td>
           </tr>
         </tbody>
@@ -490,22 +587,24 @@ function renderLearningStyleCard(settled) {
   const effectiveTypes = data.most_effective_resource_types || [];
 
   const styleIcons = {
-    Visual: "&#128065;", Auditory: "&#127911;", Reading: "&#128214;", Kinesthetic: "&#9997;", Mixed: "&#127912;"
+    Visual: "👁",
+    Auditory: "🎧",
+    Reading: "📖",
+    Kinesthetic: "✋",
+    Mixed: "🔄",
   };
-  const icon = styleIcons[style] || "&#128300;";
+  const icon = styleIcons[style] || "❓";
 
   let effectiveHtml = "";
   if (effectiveTypes.length > 0) {
     effectiveHtml = `<div class="perf-stat-row" style="margin-top:0.5rem;">
       <span class="perf-stat-label">Best resource types</span>
-      <span class="perf-stat-value">${effectiveTypes.map(t => t.resource_type).join(", ") || "—"}</span>
+      <span class="perf-stat-value">${effectiveTypes.map((t) => t.resource_type).join(", ") || "—"}</span>
     </div>`;
   }
 
-  const trendIcon = trend.toLowerCase().includes("improv") ? "&#9650;" :
-                    trend.toLowerCase().includes("declin") ? "&#9660;" : "&#9679;";
-  const trendClass = trend.toLowerCase().includes("improv") ? "trend-up" :
-                     trend.toLowerCase().includes("declin") ? "trend-down" : "trend-stable";
+  const trendIcon = trend.toLowerCase().includes("improv") ? "↑" : trend.toLowerCase().includes("declin") ? "↓" : "•";
+  const trendClass = trend.toLowerCase().includes("improv") ? "trend-up" : trend.toLowerCase().includes("declin") ? "trend-down" : "trend-stable";
 
   return `<div class="perf-card">
     <div class="perf-card-title">Learning Style</div>
